@@ -492,8 +492,10 @@ sub get_attribute {
     #Handle global JSONWire emulation flag
     $no_i_really_mean_it = 1 unless $self->{driver}->{emulate_jsonwire};
 
-    return $self->get_property($attr_name) if $self->driver->{is_wd3} && !(grep { $self->driver->browser_name eq $_ } qw{chrome MicrosoftEdge}) && !$no_i_really_mean_it;
-
+    my $prop;
+    $prop = $self->get_property($attr_name) if $self->driver->{is_wd3} && !(grep { $self->driver->browser_name eq $_ } qw{chrome MicrosoftEdge}) && !$no_i_really_mean_it;
+    return $prop
+        if $prop;
     my $res = {
         'command' => 'getElementAttribute',
         'id'      => $self->id,
@@ -515,7 +517,11 @@ Only available on WebDriver 3 enabled servers.
 sub get_property {
     my ($self,$prop) = @_;
     return $self->get_attribute($prop) if $self->driver->{is_wd3} && (grep { $self->driver->browser_name eq $_ } qw{chrome MicrosoftEdge});
-    my $res = { 'command' => 'getElementProperty', id => $self->id, name => $prop };
+    my $res = {
+        'command' => 'getElementProperty',
+        'id'      => $self->id,
+        'name'    => $prop,
+    };
     return $self->_execute_command($res);
 }
 
